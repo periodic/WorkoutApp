@@ -1,12 +1,13 @@
 module Main exposing (main)
 
-import StateManager
-import View.Root as Root
 import Html
+import Navigation
 
+import StateManager
 
 main : Program Never StateManager.Model StateManager.Msg
-main = Html.program
+-- TODO: Stop ignoring locations.
+main = Navigation.program StateManager.LocationChangedMsg
     { init = StateManager.init
     , update = StateManager.update
     , subscriptions = StateManager.subscriptions

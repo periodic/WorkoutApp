@@ -1,54 +1,64 @@
-module StateManager exposing (Model, Msg, init, update, subscriptions, view)
+module StateManager exposing (Model, Msg(..), init, update, subscriptions, view)
 
 import Dict
 import Html.Events exposing (onClick)
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, text, h1)
+import Navigation exposing (Location)
 
-import Component.MultiPage as MultiPage
+import Model.Actions exposing (..)
 import Model.Model as Model
-import Model.PredefinedPrograms.TexasMethod as TexasMethod
+import Model.Intent exposing (..)
+import Model.PredefinedPrograms.Programs exposing (allPrograms)
 import View.ProgramOverview as ProgramOverview
-
-type Page
-    = ProgramOverviewPage
-    | WorkoutPage
+import Router
 
 type alias Model =
-    { trainingProgram : Model.TrainingProgram
-    , multiPage : MultiPage.Model Page
+    { router : Router.Model
     }
 
 type Msg
-    = MultiPageMsg (MultiPage.Msg Page)
-    | StartWorkoutMsg
+    = RouterMsg Router.Msg
+    | LocationChangedMsg Location
+    | CallbackMsg Action
 
-init : (Model, Cmd Msg)
-init =
+init : Location -> (Model, Cmd Msg)
+init location =
     let
-        (multiPage, _) = MultiPage.init ProgramOverviewPage
+        (router, routerCmd) =
+            Router.init location.pathname
         model =
-            { trainingProgram = TexasMethod.basicProgram
-            , multiPage = multiPage
+            { router = router
             }
         cmd =
-            Cmd.none
+            Cmd.batch [Cmd.map RouterMsg routerCmd]
     in
        (model, cmd)
 
 update : Msg -> Model -> (Model, Cmd Msg)
-update msg model = 
+update msg model =
     case msg of
-        StartWorkoutMsg ->
+        RouterMsg msg_ ->
             let
-                (multiPageModel, _) = MultiPage.update (MultiPage.ChangePageMsg WorkoutPage) model.multiPage
+                (router, cmd) = Router.update msg_ model.router
             in
-                ({ model | multiPage = multiPageModel }, Cmd.none)
+                ({ model | router = router }, Cmd.map RouterMsg cmd)
 
-        MultiPageMsg msg_ ->
+        CallbackMsg outMsg ->
+            interpret outMsg model
+
+        LocationChangedMsg _ ->
+            -- TODO: Using this to update the location causes a loop.
+            -- Need to pass in the path and only update if the intent changes.
+            (model, Cmd.none)
+
+interpret : Action -> Model -> (Model, Cmd Msg)
+interpret msg model =
+    case msg of
+        RoutingAction action ->
             let
-                (multiPageModel, _) = MultiPage.update msg_ model.multiPage
+                (router_, cmd) = Router.interpret action model.router
             in
-                ({ model | multiPage = multiPageModel }, Cmd.none)
+               ({ model | router = router_ }, Cmd.map RouterMsg cmd)
 
 
 subscriptions : Model -> Sub Msg
@@ -56,21 +66,28 @@ subscriptions _ = Sub.none
 
 view : Model -> Html Msg
 view model =
-    MultiPage.view viewPage model.multiPage model.trainingProgram
+    Router.view viewPage model.router
 
-viewPage : Page -> Model.TrainingProgram -> Html Msg
+viewPage : Intent -> Html Msg
 viewPage page =
     case page of
-        ProgramOverviewPage ->
-            viewOverview
-        WorkoutPage ->
-            viewWorkout
+        ListProgramsIntent ->
+            viewProgramList
+        ViewProgramIntent program ->
+            viewProgram program
 
-viewOverview : Model.TrainingProgram -> Html Msg
-viewOverview _ =
-    div [ onClick StartWorkoutMsg ]
-        [ text "ProgramOverview" ]
+viewProgramList : Html Msg
+viewProgramList =
+    div []
+        (List.map viewProgramListItem allPrograms)
 
-viewWorkout : Model.TrainingProgram -> Html Msg
-viewWorkout _ =
-    div [] [ text "Workout!" ]
+viewProgramListItem : Model.TrainingProgram -> Html Msg
+viewProgramListItem program =
+    div [ onClick <| CallbackMsg (RoutingAction (ViewProgramAction program)) ]
+        [ text <| program.name ]
+
+viewProgram : Model.TrainingProgram -> Html Msg
+viewProgram program =
+    div []
+        [ h1 [] [ text program.name ]
+        ]

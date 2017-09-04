@@ -8,7 +8,8 @@ type Time
     = Seconds Float
 
 type alias TrainingProgram =
-    { name : String
+    { id : String
+    , name : String
     , exercises : List
         { exercise : ExerciseDefinition
         , repeatEvery : Int

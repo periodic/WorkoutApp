@@ -38,7 +38,8 @@ intensity name =
 
 basicProgram : TrainingProgram
 basicProgram =
-    { name = "Texas Method"
+    { id = "texas-method-basic"
+    , name = "Texas Method"
     , exercises =
         [ { exercise = volume "Squat"
           , repeatEvery = 3
