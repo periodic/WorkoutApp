@@ -4,5 +4,5 @@ import Model.Model as Model
 
 type Intent
     = ListProgramsIntent
-    | ViewProgramIntent Model.TrainingProgram
+    | SelectNewProgramIntent
 

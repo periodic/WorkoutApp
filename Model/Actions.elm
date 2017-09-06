@@ -3,8 +3,10 @@ module Model.Actions exposing (..)
 import Model.Model as Model
 
 type RoutingAction
-    = ViewProgramAction Model.TrainingProgram
-    | ViewAllProgramsAction
+    = ViewAllProgramsAction
+    | ViewSelectNewProgramAction
 
 type Action
     = RoutingAction RoutingAction
+    | SelectNewProgramAction
+    | StartNewProgramAction Model.TrainingProgramDefinition

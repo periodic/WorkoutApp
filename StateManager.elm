@@ -9,11 +9,14 @@ import Model.Actions exposing (..)
 import Model.Model as Model
 import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allPrograms)
-import View.ProgramOverview as ProgramOverview
 import Router
+
+import View.ProgramList as ProgramList
+import View.SelectNewProgram as SelectNewProgram
 
 type alias Model =
     { router : Router.Model
+    , programs : List Model.TrainingProgram
     }
 
 type Msg
@@ -28,6 +31,7 @@ init location =
             Router.init location.pathname
         model =
             { router = router
+            , programs = []
             }
         cmd =
             Cmd.batch [Cmd.map RouterMsg routerCmd]
@@ -46,10 +50,11 @@ update msg model =
         CallbackMsg outMsg ->
             interpret outMsg model
 
-        LocationChangedMsg _ ->
-            -- TODO: Using this to update the location causes a loop.
-            -- Need to pass in the path and only update if the intent changes.
-            (model, Cmd.none)
+        LocationChangedMsg location ->
+            let
+                (router, cmd) = Router.update (Router.LocationChangedMsg location.pathname) model.router
+            in
+                ({ model | router = router }, Cmd.map RouterMsg cmd)
 
 interpret : Action -> Model -> (Model, Cmd Msg)
 interpret msg model =
@@ -59,6 +64,19 @@ interpret msg model =
                 (router_, cmd) = Router.interpret action model.router
             in
                ({ model | router = router_ }, Cmd.map RouterMsg cmd)
+        SelectNewProgramAction ->
+            interpret (RoutingAction ViewSelectNewProgramAction) model
+        StartNewProgramAction programDef ->
+            let
+                program = Model.newProgramFromDef programDef
+                model_ =
+                    { model
+                    | programs = program :: model.programs
+                    }
+                routing =
+                    RoutingAction ViewAllProgramsAction
+            in
+                interpret routing model_
 
 
 subscriptions : Model -> Sub Msg
@@ -66,28 +84,14 @@ subscriptions _ = Sub.none
 
 view : Model -> Html Msg
 view model =
-    Router.view viewPage model.router
+    Router.view (viewPage model) model.router
 
-viewPage : Intent -> Html Msg
-viewPage page =
-    case page of
+viewPage : Model -> Intent -> Html Msg
+viewPage model page =
+    Html.map CallbackMsg
+    <| case page of
         ListProgramsIntent ->
-            viewProgramList
-        ViewProgramIntent program ->
-            viewProgram program
+            ProgramList.view model.programs
+        SelectNewProgramIntent ->
+            SelectNewProgram.view
 
-viewProgramList : Html Msg
-viewProgramList =
-    div []
-        (List.map viewProgramListItem allPrograms)
-
-viewProgramListItem : Model.TrainingProgram -> Html Msg
-viewProgramListItem program =
-    div [ onClick <| CallbackMsg (RoutingAction (ViewProgramAction program)) ]
-        [ text <| program.name ]
-
-viewProgram : Model.TrainingProgram -> Html Msg
-viewProgram program =
-    div []
-        [ h1 [] [ text program.name ]
-        ]

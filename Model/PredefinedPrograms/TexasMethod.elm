@@ -36,7 +36,7 @@ intensity : String -> ExerciseDefinition
 intensity name =
     exercise name 1 5 <| Add (Pounds 5) <| RepMax 5
 
-basicProgram : TrainingProgram
+basicProgram : TrainingProgramDefinition
 basicProgram =
     { id = "texas-method-basic"
     , name = "Texas Method"
