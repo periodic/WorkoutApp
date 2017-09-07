@@ -46,7 +46,9 @@ viewProgram program =
                 [ text "Last workout: ", text lastWorkoutString ]
     in
         div
-            [ class "ProgramList-program" ]
+            [ class "ProgramList-program"
+            , onClick <| SelectProgramAction program
+            ]
             [ nameElem
             , dateElem
             ]

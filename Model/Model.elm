@@ -66,7 +66,8 @@ type alias Workout =
     }
 
 type alias TrainingProgram =
-    { programId : String
+    { id : Int
+    , programId : String
     , workouts : List Workout
     }
 
@@ -86,8 +87,9 @@ lastTrainingDate { workouts } =
        List.foldr compareDate Nothing workouts
 
 
-newProgramFromDef : TrainingProgramDefinition -> TrainingProgram
-newProgramFromDef def =
-    { programId = def.id
+newProgramFromDef : Int -> TrainingProgramDefinition -> TrainingProgram
+newProgramFromDef id def =
+    { id = id
+    , programId = def.id
     , workouts = []
     }

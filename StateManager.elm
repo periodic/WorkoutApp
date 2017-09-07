@@ -1,6 +1,6 @@
 module StateManager exposing (Model, Msg(..), init, update, subscriptions, view)
 
-import Dict
+import Dict exposing (Dict)
 import Html.Events exposing (onClick)
 import Html exposing (Html, div, text, h1)
 import Navigation exposing (Location)
@@ -13,10 +13,12 @@ import Router
 
 import View.ProgramList as ProgramList
 import View.SelectNewProgram as SelectNewProgram
+import View.ProgramDetails as ProgramDetails
 
 type alias Model =
     { router : Router.Model
-    , programs : List Model.TrainingProgram
+    , programDict : Dict Int Model.TrainingProgram
+    , programIdList : List Int
     }
 
 type Msg
@@ -31,7 +33,8 @@ init location =
             Router.init location.pathname
         model =
             { router = router
-            , programs = []
+            , programDict = Dict.empty
+            , programIdList = []
             }
         cmd =
             Cmd.batch [Cmd.map RouterMsg routerCmd]
@@ -68,15 +71,21 @@ interpret msg model =
             interpret (RoutingAction ViewSelectNewProgramAction) model
         StartNewProgramAction programDef ->
             let
-                program = Model.newProgramFromDef programDef
+                programId = nextProgramId model
+                program = Model.newProgramFromDef programId programDef
                 model_ =
                     { model
-                    | programs = program :: model.programs
+                    | programDict = Dict.insert programId program model.programDict
+                    , programIdList = programId :: model.programIdList
                     }
                 routing =
                     RoutingAction ViewAllProgramsAction
             in
                 interpret routing model_
+        SelectProgramAction program ->
+           interpret (RoutingAction <| ViewProgramAction program) model
+        ProgramAction program action ->
+            (model, Cmd.none)
 
 
 subscriptions : Model -> Sub Msg
@@ -91,7 +100,17 @@ viewPage model page =
     Html.map CallbackMsg
     <| case page of
         ListProgramsIntent ->
-            ProgramList.view model.programs
+            ProgramList.view <| programList model
         SelectNewProgramIntent ->
             SelectNewProgram.view
+        ViewProgramIntent program ->
+           Html.map (ProgramAction program) <| ProgramDetails.view program
 
+nextProgramId : Model -> Int
+nextProgramId { programIdList } =
+    List.foldr max 0 programIdList
+
+programList : Model -> List Model.TrainingProgram
+programList { programIdList, programDict } =
+    List.map (flip Dict.get programDict) programIdList
+    |> List.filterMap identity

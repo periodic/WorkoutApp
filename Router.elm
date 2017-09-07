@@ -34,6 +34,8 @@ intentToPath intent =
             "/programs"
         SelectNewProgramIntent ->
             "/programs/start"
+        ViewProgramIntent program ->
+            "/programs/" ++ toString program.id
 
 pathToIntent : String -> Intent
 pathToIntent path =
@@ -43,12 +45,15 @@ update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case (msg, model) of
         (LocationChangedMsg path, Model intent) ->
+            {-
             let
                 intent_ = pathToIntent path
             in
                if intent_ /= intent
                   then (Model intent_, Cmd.none)
                   else (model, Cmd.none)
+                  -}
+            (model, Cmd.none)
 
 interpret : RoutingAction -> Model -> (Model, Cmd Msg)
 interpret outMsg model =
@@ -57,6 +62,8 @@ interpret outMsg model =
             navigateTo ListProgramsIntent
         ViewSelectNewProgramAction ->
             navigateTo SelectNewProgramIntent
+        ViewProgramAction program ->
+            navigateTo <| ViewProgramIntent program
 
 view : (Intent -> Html msg) -> Model -> Html msg
 view views model =
@@ -94,9 +101,18 @@ newProgramParser =
     *> Combine.end)
     $> SelectNewProgramIntent
 
+viewProgramParser : Parser s Intent
+viewProgramParser =
+    (pathSep
+    *> Combine.string "programs"
+    *> pathSep
+    *> programId
+    <* Combine.end)
+    $> ListProgramsIntent -- TODO
+
 programId : Parser s String
 programId =
-    Combine.regex "[a-z0-9_-]+"
+    Combine.regex "[0-9]+"
 
 pathSep : Parser s String
 pathSep =
