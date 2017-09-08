@@ -36,6 +36,8 @@ intentToPath intent =
             "/programs/start"
         ViewProgramIntent program ->
             "/programs/" ++ toString program.id
+        ViewWorkoutIntent _ program workout->
+            "/programs/" ++ toString program.id ++ "/workout/" ++ toString workout.offset
 
 pathToIntent : String -> Intent
 pathToIntent path =
@@ -64,6 +66,8 @@ interpret outMsg model =
             navigateTo SelectNewProgramIntent
         ViewProgramAction program ->
             navigateTo <| ViewProgramIntent program
+        ViewWorkoutAction programDef program workout ->
+            navigateTo <| ViewWorkoutIntent programDef program workout
 
 view : (Intent -> Html msg) -> Model -> Html msg
 view views model =
@@ -100,15 +104,6 @@ newProgramParser =
     *> Combine.string "start"
     *> Combine.end)
     $> SelectNewProgramIntent
-
-viewProgramParser : Parser s Intent
-viewProgramParser =
-    (pathSep
-    *> Combine.string "programs"
-    *> pathSep
-    *> programId
-    <* Combine.end)
-    $> ListProgramsIntent -- TODO
 
 programId : Parser s String
 programId =

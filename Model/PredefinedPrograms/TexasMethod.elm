@@ -3,12 +3,12 @@ module Model.PredefinedPrograms.TexasMethod exposing (basicProgram)
 import Model.Model exposing (..)
 
 bar : Weight
-bar = Pounds 45
+bar = 45
 
 percentOfWorkingWeight : Float -> WeightDefinition -> WeightDefinition
 percentOfWorkingWeight percent working =
     let
-        plates = MaxOf (Fixed (Pounds 0)) (Subtract bar working)
+        plates = MaxOf (Fixed (0)) (Subtract bar working)
     in
        Add bar (Percentage percent plates)
 
@@ -34,7 +34,7 @@ volume name =
 
 intensity : String -> ExerciseDefinition
 intensity name =
-    exercise name 1 5 <| Add (Pounds 5) <| RepMax 5
+    exercise name 1 5 <| Add 5 <| RepMax 5
 
 basicProgram : TrainingProgramDefinition
 basicProgram =
@@ -46,11 +46,11 @@ basicProgram =
           , repeatOffset = 0
           }
         , { exercise = volume "Benchpress"
-          , repeatEvery = 3
+          , repeatEvery = 6
           , repeatOffset = 0
           }
         , { exercise = volume "Overhead Press"
-          , repeatEvery = 3
+          , repeatEvery = 6
           , repeatOffset = 3
           }
         , { exercise = exercise "Squat" 2 5 (Percentage 0.8 (RepMax 5))
@@ -58,23 +58,23 @@ basicProgram =
           , repeatOffset = 1
           }
         , { exercise = exercise "Benchpress" 3 5 (Percentage 0.9 (RepMax 5))
-          , repeatEvery = 3
+          , repeatEvery = 6
           , repeatOffset = 4
           }
         , { exercise = exercise "Overhead Press" 3 5 (Percentage 0.9 (RepMax 5))
-          , repeatEvery = 1
-          , repeatOffset = 3
+          , repeatEvery = 6
+          , repeatOffset = 1
           }
         , { exercise = intensity "Squat"
           , repeatEvery = 3
           , repeatOffset = 2
           }
         , { exercise = intensity "Benchpress"
-          , repeatEvery = 3
+          , repeatEvery = 6
           , repeatOffset = 2
           }
         , { exercise = intensity "Overhead Press"
-          , repeatEvery = 1
+          , repeatEvery = 6
           , repeatOffset = 5
           }
         ]

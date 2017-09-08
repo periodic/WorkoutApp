@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 
 import Model.Actions exposing (..)
 import Model.Model exposing (..)
+import Model.Utils as ModelUtils
 import Model.PredefinedPrograms.Programs exposing (allProgramsDict)
 
 view : List TrainingProgram -> Html Action
@@ -32,7 +33,7 @@ viewProgram program =
             Maybe.map .name programDef |> Maybe.withDefault "Unknown"
 
         lastWorkout =
-            lastTrainingDate program
+            ModelUtils.lastTrainingDate program
         lastWorkoutString =
             Maybe.map toString lastWorkout |> Maybe.withDefault "Never"
 

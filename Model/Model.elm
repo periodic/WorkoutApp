@@ -1,12 +1,9 @@
 module Model.Model exposing (..)
 
 import Dict exposing (Dict)
-import Date.Extra.Compare as Date
 import Date exposing (Date)
 
-type Weight
-    = Pounds Float
-    | Kilograms Float
+type alias Weight = Float
 
 type Time
     = Seconds Float
@@ -46,11 +43,15 @@ type alias  ExerciseDefinition =
 
 type alias Set =
     { weight : Weight
-    , reps : Int
+    , targetReps : Int
+    , completedReps : Int
     }
 
 type alias Exercise =
-    { exercises : Dict String (List Set)
+    { name : String
+    , warmupSets : List Set
+    , workingSets : List Set
+    , restDuration : Time
     }
 
 type WorkoutStatus
@@ -62,6 +63,7 @@ type WorkoutStatus
 type alias Workout =
     { exercises : List Exercise
     , date_started : Date
+    , offset : Int
     , status : WorkoutStatus
     }
 
@@ -69,27 +71,5 @@ type alias TrainingProgram =
     { id : Int
     , programId : String
     , workouts : List Workout
-    }
-
-lastTrainingDate : TrainingProgram -> Maybe Date
-lastTrainingDate { workouts } =
-    let
-        compareDate workout mDate =
-            case mDate of 
-                Nothing ->
-                    Just workout.date_started
-                Just date ->
-                    Just
-                    <| if Date.is Date.After workout.date_started date
-                        then workout.date_started
-                        else date
-    in
-       List.foldr compareDate Nothing workouts
-
-
-newProgramFromDef : Int -> TrainingProgramDefinition -> TrainingProgram
-newProgramFromDef id def =
-    { id = id
-    , programId = def.id
-    , workouts = []
+    , startingWeights : Dict String Weight
     }

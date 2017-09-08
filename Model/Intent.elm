@@ -6,4 +6,5 @@ type Intent
     = ListProgramsIntent
     | SelectNewProgramIntent
     | ViewProgramIntent Model.TrainingProgram
+    | ViewWorkoutIntent Model.TrainingProgramDefinition Model.TrainingProgram Model.Workout
 
