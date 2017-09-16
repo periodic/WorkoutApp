@@ -13,11 +13,11 @@ lastTrainingDate { workouts } =
         compareDate workout mDate =
             case mDate of 
                 Nothing ->
-                    Just workout.date_started
+                    Just workout.dateStarted
                 Just date ->
                     Just
-                    <| if Date.is Date.After workout.date_started date
-                        then workout.date_started
+                    <| if Date.is Date.After workout.dateStarted date
+                        then workout.dateStarted
                         else date
     in
        List.foldr compareDate Nothing workouts
@@ -48,7 +48,7 @@ newWorkout programDef program offset date =
             }
     in
         { exercises = List.map exerciseFromDef exerciseDefs
-        , date_started = date
+        , dateStarted = date
         , offset = offset
         , status = InProgressWorkoutStatus
         }

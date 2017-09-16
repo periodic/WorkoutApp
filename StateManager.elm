@@ -1,6 +1,6 @@
-module StateManager exposing (Model, Msg(..), init, update, subscriptions, view)
+module StateManager exposing (Model, Msg, init, update, subscriptions, view)
 
-import Dict exposing (Dict)
+import Dict
 import Html.Events exposing (onClick)
 import Html exposing (Html, div, text, h1)
 import Navigation exposing (Location)
@@ -8,28 +8,22 @@ import Date exposing (Date)
 import Task
 
 import Model.Actions exposing (..)
+import Model.App exposing (..)
 import Model.Model as Model
 import Model.Utils as ModelUtils
 import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allPrograms, allProgramsDict)
 import Router
+import Interpreter.Program as ProgramInterpreter
 
 import View.ProgramList as ProgramList
 import View.SelectNewProgram as SelectNewProgram
 import View.ProgramDetails as ProgramDetails
 import View.WorkoutDetails as WorkoutDetails
 
-type alias Model =
-    { router : Router.Model
-    , programDict : Dict Int Model.TrainingProgram
-    , programIdList : List Int
-    }
+type alias Model = Model.App.Model
 
-type Msg
-    = RouterMsg Router.Msg
-    | LocationChangedMsg Location
-    | CallbackMsg Action
-    | DateForNewWorkoutMsg Model.TrainingProgram Int Date
+type alias Msg = Model.App.Msg
 
 init : Location -> (Model, Cmd Msg)
 init location =
@@ -102,14 +96,11 @@ interpret msg model =
         SelectProgramAction program ->
            interpret (RoutingAction <| ViewProgramAction program) model
         ProgramAction program action ->
-            case action of
-                StartWorkoutAction ->
-                    let
-                        offset = List.length program.workouts
-                    in
-                        (model, Task.perform (DateForNewWorkoutMsg program offset) Date.now)
-                ResumeWorkoutAction ->
-                    (model, Cmd.none)
+            let
+                (program_, cmd) = ProgramInterpreter.interpret action program
+                programDict_ = Dict.insert program_.id program_ model.programDict
+            in
+               ({ model | programDict = programDict_ }, cmd)
         WorkoutAction program workout action ->
             (model, Cmd.none)
 

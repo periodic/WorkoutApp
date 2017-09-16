@@ -62,7 +62,7 @@ type WorkoutStatus
 
 type alias Workout =
     { exercises : List Exercise
-    , date_started : Date
+    , dateStarted : Date
     , offset : Int
     , status : WorkoutStatus
     }

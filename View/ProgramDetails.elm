@@ -33,7 +33,7 @@ viewWorkout workout =
         [ class "ProgramDetails-workout" ]
         [ div
             [ class "ProgramDetails-workoutDate" ]
-            [ text <| toString workout.date_started ]
+            [ text <| toString workout.dateStarted ]
         , div 
             [ class "ProgramDetails-workoutStatus" ]
             [ text <| toString workout.status ]
