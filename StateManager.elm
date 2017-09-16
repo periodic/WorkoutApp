@@ -64,19 +64,17 @@ update msg model =
             in
                 ({ model | router = router }, Cmd.map RouterMsg cmd)
         DateForNewWorkoutMsg program offset date ->
-            let
-                workout = ModelUtils.newWorkout offset date
-                program_ = { program | workouts = workout :: program.workouts }
-                programDict_ = Dict.insert program_.id program_ model.programDict
-                model_ = { model | programDict = programDict_ }
-            in
-                case Dict.get program_.programId allProgramsDict of
-                    Just programDef ->
-                        interpret (RoutingAction <| ViewWorkoutAction programDef program_ workout) model_
-                    Nothing ->
-                        interpret (RoutingAction <| ViewProgramAction program_) model
-
-
+            case Dict.get program.programId allProgramsDict of
+                Just programDef ->
+                    let
+                        workout = ModelUtils.newWorkout programDef program offset date
+                        program_ = { program | workouts = workout :: program.workouts }
+                        programDict_ = Dict.insert program_.id program_ model.programDict
+                        model_ = { model | programDict = programDict_ }
+                    in
+                       interpret (RoutingAction <| ViewWorkoutAction programDef program_ workout) model_
+                Nothing ->
+                    interpret (RoutingAction <| ViewProgramAction program) model
 
 interpret : Action -> Model -> (Model, Cmd Msg)
 interpret msg model =
