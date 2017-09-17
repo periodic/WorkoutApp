@@ -21,11 +21,11 @@ init path =
     let
         intent = pathToIntent path
     in
-        (Model intent, Navigation.modifyUrl (intentToPath intent))
+        (Model intent, Cmd.none {- Navigation.modifyUrl (intentToPath intent) -})
 
 navigateTo : Intent -> (Model, Cmd Msg)
 navigateTo intent =
-    (Model intent, Navigation.newUrl (intentToPath intent))
+    (Model intent, Cmd.none {- Navigation.newUrl (intentToPath intent) -})
 
 intentToPath : Intent -> String
 intentToPath intent =

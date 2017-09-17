@@ -15,6 +15,7 @@ import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allPrograms, allProgramsDict)
 import Router
 import Interpreter.Program as ProgramInterpreter
+import Interpreter.Workout as WorkoutInterpreter
 
 import View.ProgramList as ProgramList
 import View.SelectNewProgram as SelectNewProgram
@@ -102,7 +103,7 @@ interpret msg model =
             in
                ({ model | programDict = programDict_ }, cmd)
         WorkoutAction program workout action ->
-            (model, Cmd.none)
+            (WorkoutInterpreter.interpret action workout, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none
