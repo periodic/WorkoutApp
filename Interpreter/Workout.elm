@@ -1,6 +1,6 @@
 module Interpreter.Workout exposing (interpret)
 
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 import Model.Model exposing (..)
 import Interpreter.Interpreter exposing (..)
 import Interpreter.Exercise as ExerciseInterpreter

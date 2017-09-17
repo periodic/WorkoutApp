@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Focus exposing ((=>))
 import FocusMore as FM exposing (FieldSetter)
 
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 import Model.Model as Model
 
 view : Model.TrainingProgramDefinition -> Model.TrainingProgram -> Model.Workout -> Html WorkoutAction

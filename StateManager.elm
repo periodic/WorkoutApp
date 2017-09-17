@@ -7,7 +7,6 @@ import Navigation exposing (Location)
 import Date exposing (Date)
 import Task
 
-import Model.Actions exposing (..)
 import Model.App exposing (..)
 import Model.Model as Model
 import Model.Utils as ModelUtils
@@ -29,35 +28,29 @@ type alias Msg = Model.App.Msg
 init : Location -> (Model, Cmd Msg)
 init location =
     let
-        (router, routerCmd) =
+        (intent, routerCmd) =
             Router.init location.pathname
         model =
-            { router = router
+            { intent = intent
             , programDict = Dict.empty
             , programIdList = []
             }
         cmd =
-            Cmd.batch [Cmd.map RouterMsg routerCmd]
+            Cmd.batch [routerCmd]
     in
        (model, cmd)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
-        RouterMsg msg_ ->
-            let
-                (router, cmd) = Router.update msg_ model.router
-            in
-                ({ model | router = router }, Cmd.map RouterMsg cmd)
-
         CallbackMsg outMsg ->
             interpret outMsg model
 
         LocationChangedMsg location ->
             let
-                (router, cmd) = Router.update (Router.LocationChangedMsg location.pathname) model.router
+                intent_ = Router.update location model.intent
             in
-                ({ model | router = router }, Cmd.map RouterMsg cmd)
+                ({ model | intent = intent_ }, Cmd.none)
         DateForNewWorkoutMsg program offset date ->
             case Dict.get program.programId allProgramsDict of
                 Just programDef ->
@@ -76,9 +69,9 @@ interpret msg model =
     case msg of
         RoutingAction action ->
             let
-                (router_, cmd) = Router.interpret action model.router
+                (intent_, cmd) = Router.interpret action model.intent
             in
-               ({ model | router = router_ }, Cmd.map RouterMsg cmd)
+               ({ model | intent = intent_ }, cmd)
         SelectNewProgramAction ->
             interpret (RoutingAction ViewSelectNewProgramAction) model
         StartNewProgramAction programDef ->
@@ -102,15 +95,15 @@ interpret msg model =
                 programDict_ = Dict.insert program_.id program_ model.programDict
             in
                ({ model | programDict = programDict_ }, cmd)
-        WorkoutAction program workout action ->
-            (WorkoutInterpreter.interpret action workout, Cmd.none)
+        WorkoutAction setter action ->
+            (setter (WorkoutInterpreter.interpret action) model, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none
 
 view : Model -> Html Msg
 view model =
-    Router.view (viewPage model) model.router
+    Router.view (viewPage model) model.intent
 
 viewPage : Model -> Intent -> Html Msg
 viewPage model page =
@@ -121,8 +114,11 @@ viewPage model page =
         SelectNewProgramIntent ->
             SelectNewProgram.view
         ViewProgramIntent program ->
-           Html.map (ProgramAction program) <| ProgramDetails.view program
+            Html.map (ProgramAction program) <| ProgramDetails.view program
         ViewWorkoutIntent programDef program workout ->
+            let
+                workoutLens =
+                    programLens program.id => 
            Html.map (WorkoutAction program workout) <| WorkoutDetails.view programDef program workout
 
 nextProgramId : Model -> Int

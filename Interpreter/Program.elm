@@ -5,7 +5,7 @@ import Task
 
 import Model.App exposing (..)
 import Model.Model as Model
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 
 interpret : ProgramAction -> Model.TrainingProgram -> (Model.TrainingProgram, Cmd Msg)
 interpret action program =

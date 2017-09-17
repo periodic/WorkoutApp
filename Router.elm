@@ -1,4 +1,4 @@
-module Router exposing (Msg(..), Model, init, update, interpret, view, intentToPath, pathToIntent)
+module Router exposing (Msg(..), init, update, interpret, view, intentToPath, pathToIntent)
 
 import Dict
 import Html exposing (Html)
@@ -6,26 +6,23 @@ import Set
 import Navigation exposing (Location)
 import Combine exposing (Parser, (<$>), (<*), (*>), (<*>), (<|>), (<?>), (<$), ($>))
 
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allProgramsDict)
 
 type Msg
     = LocationChangedMsg String
 
-type Model
-    = Model Intent
-
-init : String -> (Model, Cmd Msg)
+init : String -> (Intent, Cmd msg)
 init path =
     let
         intent = pathToIntent path
     in
-        (Model intent, Cmd.none {- Navigation.modifyUrl (intentToPath intent) -})
+        (intent, Cmd.none {- Navigation.modifyUrl (intentToPath intent) -})
 
-navigateTo : Intent -> (Model, Cmd Msg)
+navigateTo : Intent -> (Intent, Cmd msg)
 navigateTo intent =
-    (Model intent, Cmd.none {- Navigation.newUrl (intentToPath intent) -})
+    (intent, Cmd.none {- Navigation.newUrl (intentToPath intent) -})
 
 intentToPath : Intent -> String
 intentToPath intent =
@@ -43,21 +40,11 @@ pathToIntent : String -> Intent
 pathToIntent path =
     parsePath path |> Result.withDefault ListProgramsIntent
 
-update : Msg -> Model -> (Model, Cmd Msg)
-update msg model =
-    case (msg, model) of
-        (LocationChangedMsg path, Model intent) ->
-            {-
-            let
-                intent_ = pathToIntent path
-            in
-               if intent_ /= intent
-                  then (Model intent_, Cmd.none)
-                  else (model, Cmd.none)
-                  -}
-            (model, Cmd.none)
+update : Location -> Intent -> Intent
+update location model =
+    model
 
-interpret : RoutingAction -> Model -> (Model, Cmd Msg)
+interpret : RoutingAction -> Intent -> (Intent, Cmd msg)
 interpret outMsg model =
     case outMsg of
         ViewAllProgramsAction ->
@@ -69,10 +56,10 @@ interpret outMsg model =
         ViewWorkoutAction programDef program workout ->
             navigateTo <| ViewWorkoutIntent programDef program workout
 
-view : (Intent -> Html msg) -> Model -> Html msg
+view : (Intent -> Html msg) -> Intent -> Html msg
 view views model =
     case model of
-        Model intent ->
+        intent ->
             views intent
 
 -- Parser

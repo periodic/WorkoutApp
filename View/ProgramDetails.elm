@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 import Model.Model as Model
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 
 view : Model.TrainingProgram -> Html ProgramAction
 view program =

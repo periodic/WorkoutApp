@@ -4,7 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
-import Model.Actions exposing (..)
+import Model.App exposing (..)
 import Model.Model as Model
 import Model.PredefinedPrograms.Programs exposing (allPrograms)
 
