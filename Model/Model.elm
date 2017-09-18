@@ -1,5 +1,6 @@
 module Model.Model exposing (..)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Date exposing (Date)
 
@@ -11,7 +12,7 @@ type Time
 type alias TrainingProgramDefinition =
     { id : String
     , name : String
-    , exercises : List
+    , exercises : Array
         { exercise : ExerciseDefinition
         , repeatEvery : Int
         , repeatOffset : Int
@@ -36,8 +37,8 @@ type alias SetDefinition =
 
 type alias  ExerciseDefinition =
     { name : String
-    , workingSets : List SetDefinition
-    , warmupSets : List SetDefinition
+    , workingSets : Array SetDefinition
+    , warmupSets : Array SetDefinition
     , restDuration : Time
     }
 
@@ -49,8 +50,8 @@ type alias Set =
 
 type alias Exercise =
     { name : String
-    , warmupSets : List Set
-    , workingSets : List Set
+    , warmupSets : Array Set
+    , workingSets : Array Set
     , restDuration : Time
     }
 
@@ -61,7 +62,7 @@ type WorkoutStatus
     | SkippedWorkoutStatus
 
 type alias Workout =
-    { exercises : List Exercise
+    { exercises : Array Exercise
     , dateStarted : Date
     , offset : Int
     , status : WorkoutStatus
@@ -70,6 +71,6 @@ type alias Workout =
 type alias TrainingProgram =
     { id : Int
     , programId : String
-    , workouts : List Workout
+    , workouts : Array Workout
     , startingWeights : Dict String Weight
     }

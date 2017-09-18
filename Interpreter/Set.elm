@@ -1,14 +1,18 @@
 module Interpreter.Set exposing (interpret)
 
-import Focus exposing ((.=))
+import Monocle.Lens exposing (Lens)
 
 import Model.App exposing (..)
 import Model.Model exposing (..)
 
-completedLens f set = { set | completedReps = f set.completedReps }
+completedLens : Lens Set Int
+completedLens =
+    { get = .completedReps
+    , set = \reps set -> { set | completedReps = reps }
+    }
 
-interpret : SetAction -> Set -> Set
-interpret action model =
+interpret : SetAction -> Set -> (Set, Cmd msg)
+interpret action set =
     case action of
         SetCompletedRepsAction int ->
-            completedLens .= int <| model
+            (completedLens.set int set, Cmd.none)

@@ -6,8 +6,8 @@ import Interpreter.Interpreter exposing (..)
 import Interpreter.Set as SetInterpreter
 
 
-interpret : ExerciseAction -> Exercise -> Exercise
+interpret : ExerciseAction -> Exercise -> (Exercise, Cmd msg)
 interpret action exercise = 
     case action of
-        SetAction lens setAction ->
-            focusedInterpret lens SetInterpreter.interpret setAction exercise
+        SkipExerciseAction ->
+            (exercise, Cmd.none)

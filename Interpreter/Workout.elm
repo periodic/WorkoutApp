@@ -6,10 +6,9 @@ import Interpreter.Interpreter exposing (..)
 import Interpreter.Exercise as ExerciseInterpreter
 
 
-interpret : WorkoutAction -> Workout -> Workout
+interpret : WorkoutAction -> Workout -> (Workout, Cmd msg)
 interpret action workout = 
     case action of
-        ExerciseAction lens exerciseAction ->
-            focusedInterpret lens ExerciseInterpreter.interpret exerciseAction workout
         FinishWorkoutAction ->
-            workout
+            -- TODO
+            (workout, Cmd.none)

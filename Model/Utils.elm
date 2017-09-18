@@ -1,5 +1,6 @@
 module Model.Utils exposing (..)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Date.Extra.Compare as Date
 import Date exposing (Date)
@@ -20,14 +21,14 @@ lastTrainingDate { workouts } =
                         then workout.dateStarted
                         else date
     in
-       List.foldr compareDate Nothing workouts
+       Array.foldr compareDate Nothing workouts
 
 
 newProgramFromDef : Int -> TrainingProgramDefinition -> TrainingProgram
 newProgramFromDef id def =
     { id = id
     , programId = def.id
-    , workouts = []
+    , workouts = Array.empty
     , startingWeights = Dict.empty -- TODO
     }
 
@@ -37,8 +38,8 @@ newWorkout programDef program offset date =
         exerciseDefs = exercisesForWorkout offset programDef
         exerciseFromDef { name, workingSets, warmupSets, restDuration } =
             { name = name
-            , warmupSets = List.map (setFromDef name) warmupSets
-            , workingSets = List.map (setFromDef name) workingSets
+            , warmupSets = Array.map (setFromDef name) warmupSets
+            , workingSets = Array.map (setFromDef name) workingSets
             , restDuration = restDuration
             }
         setFromDef name { weight, reps } =
@@ -47,30 +48,29 @@ newWorkout programDef program offset date =
             , completedReps = 0
             }
     in
-        { exercises = List.map exerciseFromDef exerciseDefs
+        { exercises = Array.map exerciseFromDef exerciseDefs
         , dateStarted = date
         , offset = offset
         , status = InProgressWorkoutStatus
         }
 
-exercisesForWorkout : Int -> TrainingProgramDefinition -> List ExerciseDefinition
+exercisesForWorkout : Int -> TrainingProgramDefinition -> Array ExerciseDefinition
 exercisesForWorkout offset programDef =
     let
         isInWorkout { exercise, repeatEvery, repeatOffset } =
-            if offset % repeatEvery == repeatOffset
-                then Just exercise
-                else Nothing
+            offset % repeatEvery == repeatOffset
     in
-        List.filterMap isInWorkout programDef.exercises
+        Array.filter isInWorkout programDef.exercises |> Array.map .exercise
 
 weightFromDef : TrainingProgram -> String -> WeightDefinition -> Weight
 weightFromDef program exerciseName weightDef =
     case weightDef of
         RepMax count ->
             program.workouts
-            |> List.concatMap (\w -> w.exercises)
+            |> Array.toList
+            |> List.concatMap (\w -> Array.toList w.exercises)
             |> List.filter (\e -> e.name == exerciseName)
-            |> List.concatMap (\e -> e.workingSets)
+            |> List.concatMap (\e -> Array.toList e.workingSets)
             |> List.filter (\s -> s.completedReps >= count)
             |> List.map (\s -> s.weight)
             |> List.maximum

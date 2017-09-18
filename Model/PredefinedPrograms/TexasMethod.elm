@@ -1,5 +1,6 @@
 module Model.PredefinedPrograms.TexasMethod exposing (basicProgram)
 
+import Array exposing (Array, fromList)
 import Model.Model exposing (..)
 
 bar : Weight
@@ -12,8 +13,8 @@ percentOfWorkingWeight percent working =
     in
        Add bar (Percentage percent plates)
 
-warmupSets : WeightDefinition -> List SetDefinition
-warmupSets working =
+warmupSets : WeightDefinition -> Array SetDefinition
+warmupSets working = fromList
     [ { weight = Fixed bar, reps = 10 }
     , { weight = percentOfWorkingWeight 0.25 working, reps = 5 }
     , { weight = percentOfWorkingWeight 0.50 working, reps = 3 }
@@ -23,7 +24,7 @@ warmupSets working =
 exercise : String -> Int -> Int -> WeightDefinition -> ExerciseDefinition
 exercise name sets reps workingWeight =
     { name = name
-    , workingSets = List.repeat sets { weight = workingWeight, reps = reps }
+    , workingSets = Array.repeat sets { weight = workingWeight, reps = reps }
     , warmupSets = warmupSets workingWeight
     , restDuration = Seconds 90
     }
@@ -40,7 +41,7 @@ basicProgram : TrainingProgramDefinition
 basicProgram =
     { id = "texas-method-basic"
     , name = "Texas Method"
-    , exercises =
+    , exercises = fromList
         [ { exercise = volume "Squat"
           , repeatEvery = 3
           , repeatOffset = 0

@@ -15,6 +15,8 @@ import Model.PredefinedPrograms.Programs exposing (allPrograms, allProgramsDict)
 import Router
 import Interpreter.Program as ProgramInterpreter
 import Interpreter.Workout as WorkoutInterpreter
+import Interpreter.Set as SetInterpreter
+import Interpreter.Exercise as ExerciseInterpreter
 
 import View.ProgramList as ProgramList
 import View.SelectNewProgram as SelectNewProgram
@@ -97,6 +99,10 @@ interpret msg model =
                ({ model | programDict = programDict_ }, cmd)
         WorkoutAction setter action ->
             (setter (WorkoutInterpreter.interpret action) model, Cmd.none)
+        SetAction setter action ->
+            (setter (SetInterpreter.interpret action) model, Cmd.none)
+        ExerciseAction setter action ->
+            (setter (ExerciseInterpreter.interpret action) model, Cmd.none)
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none

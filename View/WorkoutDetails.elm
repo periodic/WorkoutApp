@@ -1,23 +1,34 @@
 module View.WorkoutDetails exposing (view)
 
+import Array exposing (Array)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Focus exposing ((=>))
-import FocusMore as FM exposing (FieldSetter)
+import Monocle.Lens exposing (Lens)
+import Monocle.Optional exposing (..)
+import Monocle.Common exposing (..)
 
 import Model.App exposing (..)
 import Model.Model as Model
 
-view : Model.TrainingProgramDefinition -> Model.TrainingProgram -> Model.Workout -> Html WorkoutAction
-view programDef program workout =
+view : Model.TrainingProgramDefinition
+    -> Model.TrainingProgram
+    -> Model.Workout
+    -> Optional Model Model.Workout
+    -> Html Action
+view programDef program workout lens =
     let
-        exercisesLens f w =
-            { w | exercises = f w.exercises }
+        exercisesLens : Optional Model.Workout (Array Model.Exercise)
+        exercisesLens = fromLens <|
+            { get = .exercises
+            , set = \es w -> { w | exercises = es }
+            }
+        exerciseLens i =
+            lens => exercisesLens => array i
         viewExercises =
-            List.indexedMap
+            Array.toList << Array.indexedMap
                 (\i exercise ->
-                    Html.map (ExerciseAction <| exercisesLens => FM.index i) <| viewExercise exercise)
+                    Html.map (ExerciseAction <| exerciseLens i) <| viewExercise exercise (exerciseLens i))
     in
         div
             [ class "WorkoutDetails" ]
@@ -28,17 +39,21 @@ view programDef program workout =
             ]
 
 
-viewExercise : Model.Exercise -> Html ExerciseAction
-viewExercise exercise =
+viewExercise : Model.Exercise -> Optional Model Model.Exercise -> Html ExerciseAction
+viewExercise exercise lens =
     let
-        warmupSetsLens f exercise =
-            { exercise | warmupSets = f exercise.warmupSets }
-        workingSetsLens f exercise =
-            { exercise | workingSets = f exercise.workingSets }
-        viewSets : FieldSetter Model.Exercise (List Model.Set) -> List Model.Set -> List (Html ExerciseAction)
+        warmupSetsLens =
+            { get = .warmupSets
+            , set = \sets exercise -> { exercise | warmupSets = sets }
+            }
+        workingSetsLens =
+            { get = .workingSets
+            , set = \sets exercise -> { exercise | workingSets = sets }
+            }
+        viewSets : Lens Model.Exercise (Array Model.Set) -> Array Model.Set -> List (Html Action)
         viewSets setter =
-            List.indexedMap
-                (\i set -> Html.map (SetAction <| setter => FM.index i) <| viewSet set)
+            Array.toList << Array.indexedMap
+                (\i set -> Html.map (SetAction <| lens => setter => array i) <| viewSet set)
     in
         div
             [ class "WorkoutDetails-workout" ]

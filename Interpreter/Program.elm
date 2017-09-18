@@ -1,5 +1,6 @@
 module Interpreter.Program exposing (interpret)
 
+import Array
 import Date
 import Task
 
@@ -12,7 +13,7 @@ interpret action program =
     case action of
         StartWorkoutAction ->
             let
-                offset = List.length program.workouts
+                offset = Array.length program.workouts
             in
                (program, Task.perform (DateForNewWorkoutMsg program offset) Date.now)
         ResumeWorkoutAction ->

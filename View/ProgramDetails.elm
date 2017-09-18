@@ -1,5 +1,6 @@
 module View.ProgramDetails exposing (view)
 
+import Array
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -26,7 +27,7 @@ startWorkoutButton program =
 viewWorkouts workouts =
     div
         [ class "ProgramDetails-workouts" ]
-        ( List.map viewWorkout workouts )
+        ( Array.toList <| Array.map viewWorkout workouts )
 
 viewWorkout workout =
     div

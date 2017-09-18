@@ -2,8 +2,8 @@ module Model.App exposing (..)
 
 import Date exposing (Date)
 import Dict exposing (Dict)
-import Focus
-import FocusMore exposing (FieldSetter)
+import Monocle.Lens exposing (Lens)
+import Monocle.Optional exposing (Optional)
 import Navigation exposing (Location)
 
 import Model.Model as Model
@@ -30,20 +30,21 @@ type ProgramAction
     = ResumeWorkoutAction
     | StartWorkoutAction
 
+type ExerciseAction
+    = SkipExerciseAction
+
 type WorkoutAction
     = FinishWorkoutAction
-    | ExerciseAction (FieldSetter Model.Workout Model.Exercise) ExerciseAction
-
-type ExerciseAction
-    = SetAction (FieldSetter Model.Exercise Model.Set) SetAction
 
 type SetAction
     = SetCompletedRepsAction Int
 
 type Action
     = RoutingAction RoutingAction
-    | ProgramAction Model.TrainingProgram ProgramAction
-    | WorkoutAction (FieldSetter Model Model.Workout) WorkoutAction
+    | ProgramAction (Optional Model Model.TrainingProgram) ProgramAction
+    | WorkoutAction (Optional Model Model.Workout) WorkoutAction
+    | ExerciseAction (Optional Model Model.Exercise) ExerciseAction
+    | SetAction (Optional Model Model.Set) SetAction
     | SelectNewProgramAction
     | StartNewProgramAction Model.TrainingProgramDefinition
     | SelectProgramAction Model.TrainingProgram
