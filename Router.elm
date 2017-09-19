@@ -7,7 +7,6 @@ import Navigation exposing (Location)
 import Combine exposing (Parser, (<$>), (<*), (*>), (<*>), (<|>), (<?>), (<$), ($>))
 
 import Model.App exposing (..)
-import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allProgramsDict)
 
 type Msg
@@ -31,9 +30,9 @@ intentToPath intent =
             "/programs"
         SelectNewProgramIntent ->
             "/programs/start"
-        ViewProgramIntent program ->
-            "/programs/" ++ toString program.id
-        ViewWorkoutIntent _ program workout->
+        ViewProgramIntent program _ ->
+            "/programs/foo" ++ toString program.id
+        ViewWorkoutIntent _ program workout _->
             "/programs/" ++ toString program.id ++ "/workout/" ++ toString workout.offset
 
 pathToIntent : String -> Intent
@@ -51,10 +50,10 @@ interpret outMsg model =
             navigateTo ListProgramsIntent
         ViewSelectNewProgramAction ->
             navigateTo SelectNewProgramIntent
-        ViewProgramAction program ->
-            navigateTo <| ViewProgramIntent program
-        ViewWorkoutAction programDef program workout ->
-            navigateTo <| ViewWorkoutIntent programDef program workout
+        ViewProgramAction program lens ->
+            navigateTo <| ViewProgramIntent program lens
+        ViewWorkoutAction programDef program workout lens ->
+            navigateTo <| ViewWorkoutIntent programDef program workout lens
 
 view : (Intent -> Html msg) -> Intent -> Html msg
 view views model =

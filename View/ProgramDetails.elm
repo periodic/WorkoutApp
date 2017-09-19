@@ -4,23 +4,24 @@ import Array
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Monocle.Optional exposing (Optional)
 
 import Model.Model as Model
 import Model.App exposing (..)
 
-view : Model.TrainingProgram -> Html ProgramAction
-view program =
+view : Optional Model Model.TrainingProgram -> Model.TrainingProgram -> Html Action
+view lens program =
     div
         [ class "ProgramDetails" ]
-        [ startWorkoutButton program
+        [ startWorkoutButton lens
         , viewWorkouts program.workouts
         ]
 
-startWorkoutButton program =
+startWorkoutButton lens =
     div
         [ class "ProgramDetails-startWorkoutButton" ]
         [ button
-            [ onClick <| StartWorkoutAction ]
+            [ onClick <| ProgramAction lens StartWorkoutAction ]
             [ text "Start new workout" ]
         ]
 

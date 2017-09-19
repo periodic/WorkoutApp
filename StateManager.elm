@@ -1,22 +1,25 @@
 module StateManager exposing (Model, Msg, init, update, subscriptions, view)
 
+import Array
 import Dict
 import Html.Events exposing (onClick)
 import Html exposing (Html, div, text, h1)
 import Navigation exposing (Location)
 import Date exposing (Date)
 import Task
+import Monocle.Common exposing (..)
+import Monocle.Optional exposing (..)
 
 import Model.App exposing (..)
 import Model.Model as Model
 import Model.Utils as ModelUtils
-import Model.Intent exposing (..)
 import Model.PredefinedPrograms.Programs exposing (allPrograms, allProgramsDict)
 import Router
 import Interpreter.Program as ProgramInterpreter
 import Interpreter.Workout as WorkoutInterpreter
 import Interpreter.Set as SetInterpreter
 import Interpreter.Exercise as ExerciseInterpreter
+import Interpreter.Interpreter exposing (..)
 
 import View.ProgramList as ProgramList
 import View.SelectNewProgram as SelectNewProgram
@@ -53,18 +56,23 @@ update msg model =
                 intent_ = Router.update location model.intent
             in
                 ({ model | intent = intent_ }, Cmd.none)
-        DateForNewWorkoutMsg program offset date ->
+        DateForNewWorkoutMsg program lens offset date ->
             case Dict.get program.programId allProgramsDict of
                 Just programDef ->
                     let
                         workout = ModelUtils.newWorkout programDef program offset date
-                        program_ = { program | workouts = workout :: program.workouts }
+                        program_ = { program | workouts = Array.append (Array.fromList [workout]) program.workouts }
                         programDict_ = Dict.insert program_.id program_ model.programDict
                         model_ = { model | programDict = programDict_ }
+                        workoutsLens = fromLens <|
+                            { get = .workouts
+                            , set = \w p -> { p | workouts = w }
+                            }
+                        lens_ = lens => workoutsLens => array 0
                     in
-                       interpret (RoutingAction <| ViewWorkoutAction programDef program_ workout) model_
+                       interpret (RoutingAction <| ViewWorkoutAction programDef program_ workout lens_) model_
                 Nothing ->
-                    interpret (RoutingAction <| ViewProgramAction program) model
+                    (model, Cmd.none)
 
 interpret : Action -> Model -> (Model, Cmd Msg)
 interpret msg model =
@@ -90,19 +98,18 @@ interpret msg model =
             in
                 interpret routing model_
         SelectProgramAction program ->
-           interpret (RoutingAction <| ViewProgramAction program) model
-        ProgramAction program action ->
-            let
-                (program_, cmd) = ProgramInterpreter.interpret action program
-                programDict_ = Dict.insert program_.id program_ model.programDict
-            in
-               ({ model | programDict = programDict_ }, cmd)
-        WorkoutAction setter action ->
-            (setter (WorkoutInterpreter.interpret action) model, Cmd.none)
-        SetAction setter action ->
-            (setter (SetInterpreter.interpret action) model, Cmd.none)
-        ExerciseAction setter action ->
-            (setter (ExerciseInterpreter.interpret action) model, Cmd.none)
+            interpret 
+                (RoutingAction
+                <| ViewProgramAction program (programOpt program.id))
+                <| model
+        ProgramAction lens action ->
+            withOptional lens (ProgramInterpreter.interpret lens action) model
+        WorkoutAction lens action ->
+            withOptional lens (WorkoutInterpreter.interpret action) model
+        SetAction lens action ->
+            withOptional lens (SetInterpreter.interpret action) model
+        ExerciseAction lens action ->
+            withOptional lens (ExerciseInterpreter.interpret action) model
 
 subscriptions : Model -> Sub Msg
 subscriptions _ = Sub.none
@@ -119,13 +126,10 @@ viewPage model page =
             ProgramList.view <| programList model
         SelectNewProgramIntent ->
             SelectNewProgram.view
-        ViewProgramIntent program ->
-            Html.map (ProgramAction program) <| ProgramDetails.view program
-        ViewWorkoutIntent programDef program workout ->
-            let
-                workoutLens =
-                    programLens program.id => 
-           Html.map (WorkoutAction program workout) <| WorkoutDetails.view programDef program workout
+        ViewProgramIntent program lens ->
+            ProgramDetails.view lens program
+        ViewWorkoutIntent programDef program workout lens ->
+            WorkoutDetails.view programDef program workout lens
 
 nextProgramId : Model -> Int
 nextProgramId { programIdList } =

@@ -28,7 +28,7 @@ view programDef program workout lens =
         viewExercises =
             Array.toList << Array.indexedMap
                 (\i exercise ->
-                    Html.map (ExerciseAction <| exerciseLens i) <| viewExercise exercise (exerciseLens i))
+                    viewExercise exercise (exerciseLens i))
     in
         div
             [ class "WorkoutDetails" ]
@@ -39,21 +39,21 @@ view programDef program workout lens =
             ]
 
 
-viewExercise : Model.Exercise -> Optional Model Model.Exercise -> Html ExerciseAction
+viewExercise : Model.Exercise -> Optional Model Model.Exercise -> Html Action
 viewExercise exercise lens =
     let
-        warmupSetsLens =
+        warmupSetsLens = fromLens <|
             { get = .warmupSets
             , set = \sets exercise -> { exercise | warmupSets = sets }
             }
-        workingSetsLens =
+        workingSetsLens = fromLens <|
             { get = .workingSets
             , set = \sets exercise -> { exercise | workingSets = sets }
             }
-        viewSets : Lens Model.Exercise (Array Model.Set) -> Array Model.Set -> List (Html Action)
+        viewSets : Optional Model.Exercise (Array Model.Set) -> Array Model.Set -> List (Html Action)
         viewSets setter =
             Array.toList << Array.indexedMap
-                (\i set -> Html.map (SetAction <| lens => setter => array i) <| viewSet set)
+                (\i set -> viewSet set <| lens => setter => array i)
     in
         div
             [ class "WorkoutDetails-workout" ]
@@ -66,8 +66,8 @@ viewExercise exercise lens =
                 ((h3 [] [ text "Working" ]) :: viewSets workingSetsLens exercise.workingSets )
             ]
 
-viewSet : Model.Set -> Html SetAction
-viewSet { weight, targetReps, completedReps } =
+viewSet : Model.Set -> Optional Model Model.Set -> Html Action
+viewSet { weight, targetReps, completedReps } setter =
     let
         repsOnClick =
             if completedReps == 0
@@ -83,7 +83,7 @@ viewSet { weight, targetReps, completedReps } =
                 ]
             , div
                 [ class "WorkoutDetails-reps"
-                , onClick <| SetCompletedRepsAction repsOnClick
+                , onClick <| SetAction setter <| SetCompletedRepsAction repsOnClick
                 ]
                 [ text <| toString completedReps
                 , text "/"
